@@ -1,39 +1,3 @@
-# 1st Lab work: Building an embedded system
-
-| Group     | 1                     |
-| --------- | --------------------- |
-| Student 1 | 89470 - João Coutinho |
-| Student 2 | 89472 - João Porto    |
-
-## Design the interface:
-### Calculate the values of resistors associated with the LEDs:
-
-**R_red**: 220 $\Omega$
-
-**R_green**: 220 $\Omega$
-
-**R_blue**: 220 $\Omega$
-
-**R_yellow**: 220 $\Omega$
-
-### Draw and design the press button interface to the controller:
-![diagram](diagram.png)
-
-### Measure the voltage drops on the LEDs:
-
-**V_red**: 1.3 V
-
-**V_green**: 1.3 V
-
-**V_blue**: 1.3 V
-
-**V_yellow**: 1.3 V
-
-### Estimate the power consumption of the interface (the circuit with the resistors and LEDs in the figure) in normal operation:
-
-## Program the application:
-### Add your program listing (adequately structured and commented):
-```c
 const int GREEN = 5;
 const int RED = 4;
 const int BLUE = 3;
@@ -86,14 +50,14 @@ void wait(int duration) {
 
   while (millis() - current_time < duration) {
   
-  	// Toggle paused state when button is pressed
+    // Toggle paused state when button is pressed
     if (digitalRead(BUTTON) == HIGH) {
       paused = !paused;
       duration -= millis() - current_time; // Deduct already elapsed time from duration
       delay(500); // Buffer wait to allow button to depress
     }
-	
-	// Freeze time when state is paused
+    
+    // Freeze time when state is paused
     if (paused) {
       digitalWrite(LED_BUILTIN, HIGH);
       current_time = millis();
@@ -102,4 +66,3 @@ void wait(int duration) {
     }
   }
 }
-```
