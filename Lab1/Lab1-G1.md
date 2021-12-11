@@ -31,6 +31,11 @@
 
 ### Estimate the power consumption of the interface (the circuit with the resistors and LEDs in the figure) in normal operation:
 
+$$v = R \times i \Leftrightarrow i = \frac{v}{R}$$
+$$p = v \times i = \frac{v^2}{R}$$
+$$v = 1.3\ V,\ R = 220\ \Omega$$
+$$p = \frac{1.3^2}{220} = 0.00768\ W = 7.68\ mW$$
+
 ## Program the application:
 ### Add your program listing (adequately structured and commented):
 ```c
