@@ -8,33 +8,86 @@
 ## Design the interface:
 ### Calculate the values of resistors associated with the LEDs:
 
-**R_red**: 220 $\Omega$
+$$max\_i = 40\ mA,\ i = 15\ mA$$
+$$v = Power - VoltageDrop$$
+$$R=\frac{v}{i}$$
 
-**R_green**: 220 $\Omega$
+**R_red**: 
 
-**R_blue**: 220 $\Omega$
+$VoltageDrop = 1.89\ V$
 
-**R_yellow**: 220 $\Omega$
+$v = 5 - 1.89 = 3.11\ V$
+
+$R = \frac{3.11}{0.015} = 207.33\ \Omega$
+
+**R_green**:
+
+$VoltageDrop = 2.07\ V$
+
+$v = 5 - 2.07 = 2.93\ V$
+
+$R = \frac{2.93}{0.015} = 195.33\ \Omega$
+
+**R_blue**:
+
+$VoltageDrop = 2.94\ V$
+
+$v = 5 - 2.94 = 2.06\ V$
+
+$R = \frac{2.06}{0.015} = 137.33\ \Omega$
+
+**R_yellow**:
+
+$VoltageDrop = 2.01\ V$
+
+$v = 5 - 2.01 = 2.99\ V$
+
+$R = \frac{2.99}{0.015} = 199.33\ \Omega$
 
 ### Draw and design the press button interface to the controller:
-![diagram](diagram.png)
+![diagram](diagram.svg)
 
 ### Measure the voltage drops on the LEDs:
 
-**V_red**: 1.3 V
+**V_red**: 1.89 V
 
-**V_green**: 1.3 V
+**V_green**: 2.07 V
 
-**V_blue**: 1.3 V
+**V_blue**: 2.94 V
 
-**V_yellow**: 1.3 V
+**V_yellow**: 2.01 V
 
 ### Estimate the power consumption of the interface (the circuit with the resistors and LEDs in the figure) in normal operation:
 
 $$v = R \times i \Leftrightarrow i = \frac{v}{R}$$
 $$p = v \times i = \frac{v^2}{R}$$
-$$v = 1.3\ V,\ R = 220\ \Omega$$
-$$p = \frac{1.3^2}{220} = 0.00768\ W = 7.68\ mW$$
+
+**When red LED is lit:**
+
+$v = 3.11\ V,\ R = 220\ \Omega$
+
+$p = \frac{3.11^2}{220} = 0.04396\ W = 43.96\ mW$
+
+**When green led is lit:**
+
+$v = 2.93\ v,\ R = 220\ \Omega$
+
+$p = \frac{2.93^2}{220} = 0.03902\ W = 39.02\ mW$
+
+**When blue led is lit:**
+
+$v = 2.06\ v,\ R = 220\ \Omega$
+
+$p = \frac{2.06^2}{220} = 0.01929\ W = 19.29\ mW$
+
+**When yellow led is lit:**
+
+$v = 2.99\ v,\ R = 220\ \Omega$
+
+$p = \frac{2.99^2}{220} = 0.04064\ W = 40.64\ mW$
+
+**Max consumption:** $43.96\ mW$,
+**Average consumption:** $\frac{43.96+39.02+19.29+40.64}{5} = \frac{142.91}{5} = 28.58\ mW$
 
 ## Program the application:
 ### Add your program listing (adequately structured and commented):
