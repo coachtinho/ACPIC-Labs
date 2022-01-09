@@ -21,8 +21,155 @@ The potentiometer provided in the starter kit was not making good contact with t
 The mapping of the temperature sensor values to actual temperatures is achieved through a single call to the `map` function. The math that derived the values used in that call is explained later on.
 
 ## 2. Controller #1 program - I2C master
+```c
+#include <Wire.h>
+
+#define VREF 26
+#define H 2
+
+double vcmp = VREF;
+
+const int TEMP = A0;
+const int LIGHT = A1;
+const int POTEN = A3;
+const int BUS = 8;
+
+
+void setup() {
+  Wire.begin();
+}
+
+void loop() {
+  // Read light intensity
+  char light = readSensorToByte(LIGHT);
+
+  // Read potentiometer
+  char poten = readSensorToByte(POTEN);
+
+  // Read teperature
+  char temp = readTemperature(TEMP);
+
+
+  // Transmit data to slave
+  Wire.beginTransmission(BUS);
+  Wire.write(light);
+  Wire.write(poten);
+  Wire.write(temp);
+  Wire.endTransmission();
+  
+  delay(100);
+}
+
+// Maps value of a sensor into a byte
+char readSensorToByte(int sensor) {
+  int sensorValue = analogRead(sensor);
+  
+  // Sensor goes from 0 to 1024, byte goes from 0 to 255
+  char result = map(sensorValue, 0, 1024, 0, 256);
+
+  return result;
+}
+
+// Maps value from temperature sensor to real temperature
+char readTemperature(int sensor) {
+  char out;
+  int sensorValue = analogRead(sensor);
+
+  // Sensor goes from 0 to 1024, temperature values was derived from reading the datasheet
+  double temp = map(sensorValue, 0, 1024, -48.77, 444.82);
+
+  // Schmitt trigger
+  if (temp < vcmp) {
+    out = 0;
+    vcmp = VREF + H/2;
+  } else {
+    out = 1;
+    vcmp = VREF - H/2;
+  }
+
+  return out;
+}
+```
 
 ## 3. Controller #2 program - I2C slave
+```c
+#include <Wire.h>
+
+const int YELLOW = 4;
+const int RED = 3;
+const int BLUE = 2;
+const int BUS = 8;
+
+// Intensity for red LED
+int lightValue = 0;
+
+// Period for yellow LED
+int blinkTime = 0;
+boolean blinkState = false;
+unsigned long last_change = 0;
+
+// Boolean for blue LED
+int tempBool = 0;
+
+
+
+void setup()
+{
+  Wire.begin(BUS);
+  Wire.onReceive(callbackFunction);
+
+  pinMode(YELLOW, OUTPUT);
+  pinMode(RED, OUTPUT);
+  pinMode(BLUE, OUTPUT);
+
+  digitalWrite(YELLOW, LOW); // turn the LED off (LOW is the voltage level)
+  digitalWrite(RED, LOW);    // turn the LED off (LOW is the voltage level)
+  digitalWrite(BLUE, LOW);   // turn the LED off (LOW is the voltage level)
+
+  last_change = millis();
+}
+
+void loop()
+{
+  redLED();
+  yellowLED();
+  blueLED();
+}
+
+void redLED() {
+  analogWrite(RED, lightValue);
+}
+
+void yellowLED() {
+  if (millis() - last_change >= blinkTime) {
+    blinkState = !blinkState;
+    digitalWrite(YELLOW, blinkState  ? HIGH : LOW);
+    last_change = millis();
+  }
+}
+
+void blueLED() {
+  digitalWrite(BLUE, tempBool>0 ? HIGH : LOW);
+}
+
+void callbackFunction(int i) {
+  while (Wire.available()) {
+    // Read light sensor - RED LED
+    int c = Wire.read(); // read the next byte as a char
+    lightValue = 255 - c;
+
+    // Read potentiometer sensor - YELLOW LED
+    c = Wire.read(); // read the next byte as a char
+    blinkTime = map(c, 0, 256, 200, 2001);
+
+    // Read temperature sensor - BLUE LED
+    c = Wire.read(); // read the next byte as a char
+    tempBool = c;
+    Serial.println(tempBool);
+    
+  }
+}
+```
 
 ## 4. For each of the three pairs of sensor-actuator describe:
 ### a. the mapping process implemented
@@ -86,8 +233,29 @@ $$Latency = 133.7\ \mu s = 1.337\times 10^{-4}\ s$$
 ![led-circuit](led-diagram.svg)
 
 ### b. Program the detection
+```c
+int analogPin = A3;
+int val = 0;
+
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  val = analogRead(analogPin);
+  
+  if (val == 1023) // Open circuit detected
+    Serial.println("Led's broken!");
+
+  delay(200);
+}
+```
 
 ### c. Describe the changes required in the communications interfaces
+There are 3 ways of alerting a human agent of a faulty LED: 
+- Add a serial connection to connect the arduino to the computer.
+- Use Arduino's built-in LED to signal the existence of a faulty component.
+- Use the I2C bus to alert Master; this would imply modification to both the Master and Slave's programs.
 
 ## 8. Mount the light sensor and the corresponding LED face to face so that the sensor detects the light emitted by "its" LED. Do you see any changes in the behavior of the LED? If so explain them. If not explain why.
 The LED's intensity starts to oscillate. We used the serial monitor to read the value straight from the sensor and it varied from ~700 to ~740. The delay in the master's control loop prevented total convergence on a single value. After sending a command to the slave, by the time the luminosity is read again, it has already been changed by the slave. This results in the LED intensity traveling back and forth through the same values in a loop. This phenomenon is displayed in the following diagram (values purely illustrative):
