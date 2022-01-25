@@ -1,6 +1,6 @@
 #include <Wire.h>
 
-#define VREF 26
+#define VREF 19
 #define H 2
 
 double vcmp = VREF;
@@ -13,7 +13,7 @@ const int BUS = 8;
 
 void setup() {
   Wire.begin();
-  // Serial.begin(9600);
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -54,6 +54,7 @@ char readTemperature(int sensor) {
 
   // Sensor goes from 0 to 1024, temperature values was derived from reading the datasheet
   double temp = map(sensorValue, 0, 1024, -48.77, 444.82);
+  Serial.println(temp);
 
   // Schmitt trigger
   if (temp < vcmp) {
