@@ -1,5 +1,5 @@
 // Duration of light: 10s
-const int DURATION = 10000;
+const int DURATION = 1000;
 
 // LED coords
 int redX;
@@ -31,6 +31,9 @@ const int GREEN_OUT = 10;
 const int RED_FAULT = A3;
 const int GREEN_FAULT = A2;
 
+// Analog pin for reading ambient light
+const int AMBIENT = A0;
+
 // Digital pins to detect movement
 const int RED_MOVE = 11;
 const int GREEN_MOVE = 12;
@@ -60,16 +63,14 @@ enum Event {
 };
 
 
-bool isFirst = true;
-
 void setup() {
   Serial.begin(9600);
 
   // Set pin modes
   pinMode(RED_OUT, OUTPUT);
   pinMode(GREEN_OUT, OUTPUT);
-  pinMode(RED_MOVE, INPUT);
-  pinMode(GREEN_MOVE, INPUT);
+  pinMode(RED_MOVE, INPUT_PULLUP);
+  pinMode(GREEN_MOVE, INPUT_PULLUP);
   pinMode(X0, INPUT);
   pinMode(X1, INPUT);
   pinMode(X2, INPUT);
@@ -86,29 +87,20 @@ void setup() {
 
 void loop() {
   // Read sensors
-  int greenSensor;
-  int redSensor;
-  // Could not get button to work
-  // in order to simulate event
-  // only the first loop iteration detects movement
-  if (isFirst) {
-    isFirst = false;
-    redSensor = HIGH; //digitalRead(RED_MOVE);
-    greenSensor = HIGH; //digitalRead(GREEN_MOVE);
-  } else {
-    redSensor = LOW; //digitalRead(RED_MOVE);
-    greenSensor = LOW; //digitalRead(GREEN_MOVE);
-  }
+  int redSensor = digitalRead(RED_MOVE);
+  int greenSensor = digitalRead(GREEN_MOVE);
+  int ambientSensor = analogRead(AMBIENT);
+  Serial.println(ambientSensor);
 
   // Decide actions
   // Eventually have to deal with predictable movement
-  if (redSensor == HIGH) {
+  if (redSensor == LOW) {
     redEvent = MOVEMENT;
   } else {
     redEvent = NOTHING;
   }
   
-  if (greenSensor == HIGH) {
+  if (greenSensor == LOW) {
     greenEvent = MOVEMENT;
   } else {
     greenEvent = NOTHING;
@@ -139,7 +131,7 @@ void redLED() {
       redTarget = FULL;
       break;
 
-    switch ADJACENT:
+    case ADJACENT:
       redStart = millis();
       redTarget = HALF;
       break;
@@ -148,11 +140,8 @@ void redLED() {
       break;
   }
 
-  // Perform fade effect
   long elapsed = millis() - redStart;
-  float percentage = (float) elapsed / (float) DURATION;
-  float multiplier = constrain(percentage, 0, 1);
-  analogWrite(RED_OUT, redTarget * (1 - multiplier));
+  analogWrite(RED_OUT, redTarget * (elapsed < DURATION));
 }
 
 void greenLED() {
@@ -174,9 +163,6 @@ void greenLED() {
       break;
   }
 
-  // Perform fade effect
   long elapsed = millis() - greenStart;
-  float percentage = (float) elapsed / (float) DURATION;
-  float multiplier = constrain(percentage, 0, 1);
-  analogWrite(GREEN_OUT, greenTarget * (1 - multiplier));
+  analogWrite(GREEN_OUT, greenTarget * (elapsed < DURATION));
 }
