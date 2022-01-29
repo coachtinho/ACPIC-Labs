@@ -17,9 +17,9 @@
 #define Y2 7
 
 // Intensity levels
-#define FULL 255
-#define HALF 128
-#define QUARTER 64
+#define FULL 1023
+#define HALF 256
+#define QUARTER 128
 
 // Digital pins to light LEDs
 #define RED_OUT 9
@@ -47,8 +47,8 @@ long redStart = -1;
 long greenStart = -1;
 
 // Target intensities for each LED
-int redTarget = QUARTER;
-int greenTarget = QUARTER;
+int redTarget;
+int greenTarget;
 
 // Events for LEDs
 // The callback onReceive function should set these variables
@@ -65,6 +65,9 @@ enum Event {
   FAIL = 254,
   OK = 255
 };
+
+// Ambient light threshold
+int ambientCmp = VREF;
 
 
 void setup() {
@@ -96,6 +99,19 @@ void loop() {
   int ambientSensor = analogRead(AMBIENT);
   Serial.println(ambientSensor);
 
+  // Schmitt trigger
+  if (ambientSensor < ambientCmp) {
+    // It's cloudy or night time
+    // No need to change value
+    ambientCmp = VREF + H/2;
+  } else {
+    // It's day time
+    // Guarantee that LEDs will turn off
+    // By maximizing ambient light
+    ambientSensor = FULL;
+    ambientCmp = VREF - H/2;
+  }
+
   // Decide actions
   // Eventually have to deal with predictable movement
   if (redSensor == LOW) {
@@ -111,7 +127,7 @@ void loop() {
   }
 
   // Perform actions
-  redLED();
+  redLED(ambientSensor);
   greenLED();
   
   delay(100);
@@ -125,11 +141,10 @@ void readCoords() {
   greenY = redY;
 }
 
-void redLED() {
+void redLED(int ambientSensor) {
   // Do red event
   switch (redEvent) {
     case MOVEMENT:
-      // Do math for day/night
       // Send to other devices
       redStart = millis();
       redTarget = FULL;
@@ -144,8 +159,13 @@ void redLED() {
       break;
   }
 
+  // Adjust brightness according to ambient light
+  int intensity = redTarget - ambientSensor;
+  intensity = constrain(intensity, 0, 1024);
+  intensity = map(intensity, 0, 1024, 0, 256);
+
   long elapsed = millis() - redStart;
-  analogWrite(RED_OUT, redTarget * (elapsed < DURATION));
+  analogWrite(RED_OUT, intensity * (elapsed < DURATION));
 }
 
 void greenLED() {
