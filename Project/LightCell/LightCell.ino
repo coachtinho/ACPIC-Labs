@@ -1,42 +1,46 @@
+// Schmitt variables
+#define VREF 1000
+#define H 10
+
 // Duration of light: 10s
-const int DURATION = 1000;
+#define DURATION 10000
+
+// Pins for reading coords
+// If left disconnected, reading is random
+// VCC = 1
+// GND = 0
+#define X0 2
+#define X1 3
+#define X2 4
+#define Y0 5
+#define Y1 6
+#define Y2 7
+
+// Intensity levels
+#define FULL 255
+#define HALF 128
+#define QUARTER 64
+
+// Digital pins to light LEDs
+#define RED_OUT 9
+#define GREEN_OUT 10
+
+// Ananlog pins to detect faults
+#define RED_FAULT A3
+#define GREEN_FAULT A2
+
+// Analog pin for reading ambient light
+#define AMBIENT A0
+
+// Digital pins to detect movement
+#define RED_MOVE 11
+#define GREEN_MOVE 12
 
 // LED coords
 int redX;
 int redY;
 int greenX;
 int greenY;
-
-// Pins for reading coords
-// If left disconnected, reading is random
-// VCC = 1
-// GND = 0
-const int X0 = 2;
-const int X1 = 3;
-const int X2 = 4;
-const int Y0 = 5;
-const int Y1 = 6;
-const int Y2 = 7;
-
-// Intensity levels
-const int FULL = 255;
-const int HALF = 128;
-const int QUARTER = 64;
-
-// Digital pins to light LEDs
-const int RED_OUT = 9;
-const int GREEN_OUT = 10;
-
-// Ananlog pins to detect faults
-const int RED_FAULT = A3;
-const int GREEN_FAULT = A2;
-
-// Analog pin for reading ambient light
-const int AMBIENT = A0;
-
-// Digital pins to detect movement
-const int RED_MOVE = 11;
-const int GREEN_MOVE = 12;
 
 // Times at which the LEDs lit up
 long redStart = -1;
