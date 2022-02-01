@@ -278,7 +278,7 @@ void setup()
   readCoords();
   // Start I2C communication
   Wire.begin(address);
-  Wire.onReceive(receiveEvent);
+  Wire.onReceive(receiveMessage);
 
   // Synchronize with other cells
   syncClock(start);
@@ -422,7 +422,7 @@ void syncClock(long startTime)
       message.time = time() / 10;
 
       // Send message
-      sendEvent(message);
+      sendMessage(message);
 
     }
   }
@@ -497,7 +497,7 @@ void greenLED()
   analogWrite(GREEN_OUT, greenTarget * (elapsed < DURATION));
 }
 
-void sendEvent(Message msg)
+void sendMessage(Message msg)
 {
   if ((msg.targetX == redX && msg.targetY == redY) ||
       (msg.targetX == greenX && msg.targetY == greenY))
@@ -561,7 +561,7 @@ void handleEvent(Message *msg)
   free(msg);
 }
 
-void receiveEvent(int numBytes)
+void receiveMessage(int numBytes)
 {
   Message *msg = (Message *)malloc(sizeof(Message));
   while (Wire.available() > 0)
